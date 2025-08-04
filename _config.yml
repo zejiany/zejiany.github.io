@@ -25,7 +25,7 @@ author:
   avatar           : "profile.png"
   name             : "Zejian You"
   pronouns         : # example: "he/his"  
-  bio              : "PhD candidate in mechanical engineering at UCSD & SDSU, working on adjoint-based data assimilation and automatic differentiation for optimization problems in computational fluid dynamics and particle-laden flows."
+  bio              : "PhD candidate"
   location         : "California"
   employer         : "San Diego State University"
   uri              : "https://zejiany.github.io"
