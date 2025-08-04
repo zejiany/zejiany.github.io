@@ -2,7 +2,7 @@
 title: "Pressure reconstruction from the measured pressure gradient using Gaussian process regression"
 collection: publications
 category: manuscripts
-permalink: /publication/2009-10-01-paper-title-number-1
+permalink: /publication/2023_AIAA_GPR
 excerpt: 'This paper is about applying the Gaussian Process Regression (GPR) method to reconstruct the pressure fields from noisy pressure gradient observation. To evaluate the performance of proposed algorithm, a comparison is conducted between the GPR method and Omni-Directional Integration (ODI) method.'
 date: 2023
 venue: 'AIAA Scitech Conference Paper'
