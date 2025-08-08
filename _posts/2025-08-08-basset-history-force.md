@@ -1,20 +1,15 @@
 ---
-title: 'Blog Post number 1'
-date: 2012-08-14
-permalink: /posts/2012/08/blog-post-1/
+title: 'Influence of Basset history force in particle-laden flow'
+date: 2025-08-08
+permalink: /posts/2025/08/history-force/
 tags:
-  - cool posts
-  - category1
-  - category2
+  - Particle-laden flow
 ---
 
 This is a sample blog post. Lorem ipsum I can't remember the rest of lorem ipsum and don't have an internet connection right now. Testing testing testing this blog post. Blog posts are cool.
 
-Headings are cool
+Literature reviews
 ======
 
-You can have many headings
-======
-
-Aren't headings cool?
+Daitche 2011
 ------
