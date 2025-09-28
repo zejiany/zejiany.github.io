@@ -1,0 +1,47 @@
+---
+title: 'Source inference'
+date: 2025-09-28
+permalink: /posts/2025/08/source-inference/
+tags:
+  - passive scalar
+bibfile: "reference.bib"
+citekeys:
+    - alapatiRecoveringReleaseHistory2000
+    - brandtPhysicsVortexMerger2007
+---
+
+<head>
+    <link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">
+    <script src="https://tikzjax.com/v1/tikzjax.js"></script>
+</head>
+
+
+# Scalar inversion
+
+
+
+<!-- BEGIN:references -->
+<style>
+p {
+  font-family: sans;
+}
+a:link {
+  color: navy; 
+  background-color: transparent; 
+  text-decoration: none;
+}
+ol {
+columns:1;
+}
+ol > li::marker {
+content:"["counter(list-item) "] ";
+}
+</style>
+
+# Reference
+Generated bibliography markdown file. Date: 2025-09-28 11:53:41
+1. <p name="alapatiRecoveringReleaseHistory2000"> <span style="font-variant: small-caps"> Alapati, S. and Kabala, Z. J. </span> 2000  <a href="https://doi.org/10.1002/(SICI)1099-1085(20000430)14:6<1003::AID-HYP981>3.0.CO;2-W"> Recovering the Release History of a Groundwater Contaminant Using a Non-Linear Least-Squares Method. </a> <i> Hydrol. Process.</i> <b> 14 </b> (6) 1003--1016</p>
+
+1. <p name="brandtPhysicsVortexMerger2007"> <span style="font-variant: small-caps"> Brandt, L. K. and Nomura, K. K. </span> 2007  <a href="https://doi.org/10.1017/S0022112007008671"> The Physics of Vortex Merger and the Effects of Ambient Stable Stratification. </a> <i> J. Fluid Mech.</i> <b> 592 </b> 413--446</p>
+
+<!-- END:references -->

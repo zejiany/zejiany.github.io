@@ -5,6 +5,8 @@ permalink: /posts/2025/08/fractional-derivative/
 tags:
   - history force
   - fractional derivative
+bibfile: "reference.bib"
+citekeys:
 ---
 
 <head>
@@ -16,7 +18,11 @@ This is a reading note about fractional derivative. And the textbook will be:
 1. [Fractional Differential Equations](https://www.sciencedirect.com/bookseries/mathematics-in-science-and-engineering/vol/198/suppl/C)
 
 
+
+
 The motivation of learning the fractional differential equation is to further understand the history force in particle-laden flow, which is a fractional derivative of order $1/2$ in Riemann-Liouville sense. And the preface of the textbook also mentions that fractional derivative provide an excellment instrument for the description of memory and hereditary properties of various material and processes.
+
+
 
 
 
@@ -34,4 +40,6 @@ The motivation of learning the fractional differential equation is to further un
 
 ## Gamma Function
 
+# Reference
+1. [A new dissipation model based on memory mechanism](https://link.springer.com/10.1007/BF00879562)
 

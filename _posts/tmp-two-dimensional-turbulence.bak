@@ -1,0 +1,45 @@
+---
+title: 'Two dimensional turbulence'
+date: 2025-09-28
+permalink: /posts/2025/08/2d_turbulence/
+tags:
+  - turbulence
+bibfile: "reference.bib"
+citekeys:
+  - boffettaTwoDimensionalTurbulence2012
+---
+
+<head>
+    <link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">
+    <script src="https://tikzjax.com/v1/tikzjax.js"></script>
+</head>
+
+
+# Literature review 
+
+See [Boffetta 2012](#boffettaTwoDimensionalTurbulence2012).
+
+
+<!-- BEGIN:references -->
+<style>
+p {
+  font-family: sans;
+}
+a:link {
+  color: navy; 
+  background-color: transparent; 
+  text-decoration: none;
+}
+ol {
+columns:1;
+}
+ol > li::marker {
+content:"["counter(list-item) "] ";
+}
+</style>
+
+# Reference
+Generated bibliography markdown file. Date: 2025-09-28 11:53:41
+1. <p id="boffettaTwoDimensionalTurbulence2012"> <span style="font-variant: small-caps"> Boffetta, G. and Ecke, R. E. </span> 2012  <a href="https://doi.org/10.1146/annurev-fluid-120710-101240"> Two-Dimensional Turbulence. </a> <i> Annual Review of Fluid Mechanics</i> <b> 44 </b> (1) 427--451</p>
+
+<!-- END:references -->
