@@ -3,9 +3,10 @@
 
 """
 Update "Reference" sections in Markdown files based on bibfile + citekeys
-declared in the YAML frontmatter.
+declared in the YAML frontmatter. Always rename the file to
+<YYYY-MM-DD>-<slug>.<ext> based on frontmatter date (if parseable).
 
-Example frontmatter:
+Frontmatter example:
 
 ---
 title: 'Source inference'
@@ -31,9 +32,10 @@ import os
 import re
 import shutil
 from datetime import datetime
+from typing import Optional, Tuple, Dict, Any
 
 import yaml  # pip install pyyaml
-import bibtexparser
+import bibtexparser  # pip install bibtexparser
 
 BEGIN_MARK = "<!-- BEGIN:references -->"
 END_MARK = "<!-- END:references -->"
@@ -50,45 +52,71 @@ a:link {
   text-decoration: none;
 }
 ol {
-columns:1;
+  columns: 1;
 }
 ol > li::marker {
-content:"["counter(list-item) "] ";
+  content: "[" counter(list-item) "] ";
 }
 </style>
 """
 
 # Cache loaded .bib files
-_BIB_CACHE = {}
+_BIB_CACHE: Dict[str, Dict[str, Dict[str, Any]]] = {}
 
 
 def clean_bibtex_braces(text: str) -> str:
     """Remove nested braces from BibTeX titles like {Two-{{Dimensional Turbulence}}}."""
     if not text:
         return ""
-    # Remove outermost braces
     cleaned = text.strip()
     if cleaned.startswith("{") and cleaned.endswith("}"):
         cleaned = cleaned[1:-1]
-    # Remove any remaining double or single braces
     cleaned = re.sub(r"[{}]", "", cleaned)
     return cleaned.strip()
 
-def make_backup(path):
+
+def _date_prefix_from_frontmatter(front_date) -> str:
+    """Return 'YYYY-MM-DD-' if front_date parses, else ''."""
+    if not front_date:
+        return ""
+    try:
+        if hasattr(front_date, "strftime"):
+            return front_date.strftime("%Y-%m-%d") + "-"
+        s = str(front_date).strip()
+        m = re.match(r"^(\d{4}-\d{2}-\d{2})", s)
+        if m:
+            return m.group(1) + "-"
+    except Exception:
+        pass
+    return ""
+
+
+def make_backup(path: str, front_date=None) -> str:
+    """
+    Create backup next to the note, named:
+      folder/tmp-<slug>.bak
+    where <slug> is the filename without extension and with a leading
+    'YYYY-MM-DD-' removed (preferably matching the frontmatter date).
+    """
     folder = os.path.dirname(path)
     fname = os.path.basename(path)
-    root, _ = os.path.splitext(fname)   # remove .md / .markdown
-    # Drop leading date-like prefix if present (YYYY-MM-DD-)
-    parts = root.split("-", 3)
-    if len(parts) >= 4 and parts[0].isdigit() and parts[1].isdigit() and parts[2].isdigit():
-        root = parts[3]
-    backup_name = f"tmp-{root}.bak"
+    root, _ = os.path.splitext(fname)
+
+    fm_prefix = _date_prefix_from_frontmatter(front_date)
+    if fm_prefix and root.startswith(fm_prefix):
+        slug = root[len(fm_prefix):]
+    else:
+        slug = re.sub(r"^\d{4}-\d{2}-\d{2}-", "", root)
+
+    backup_name = f"tmp-{slug}.bak"
     backup_path = os.path.join(folder, backup_name)
     shutil.copyfile(path, backup_path)
     return backup_path
 
+
 def normalize_whitespace(s: str) -> str:
     return re.sub(r"\s+", " ", s or "").strip()
+
 
 def format_authors(author_field: str) -> str:
     """Convert BibTeX 'author' to 'Last, F.' joined by ' and '."""
@@ -110,6 +138,7 @@ def format_authors(author_field: str) -> str:
         out.append(f"{last}, {initials}" if initials else last)
     return " and ".join(out)
 
+
 def entry_link(entry: dict) -> str:
     doi = (entry.get("doi") or "").strip()
     url = (entry.get("url") or "").strip()
@@ -121,8 +150,10 @@ def entry_link(entry: dict) -> str:
         return url or doi
     return url
 
+
 def safe_get(entry: dict, key: str) -> str:
     return (entry.get(key) or "").strip()
+
 
 def format_reference_html(key: str, entry: dict) -> str:
     authors = format_authors(safe_get(entry, "author"))
@@ -138,6 +169,7 @@ def format_reference_html(key: str, entry: dict) -> str:
     author_html = f'<span style="font-variant: small-caps"> {authors} </span>' if authors else ""
 
     parts = []
+    # Use ordered list via markdown "1." trick; add an anchorable <p id="...">
     parts.append(f'1. <p id="{key}">')
     if author_html:
         parts.append(f" {author_html} ")
@@ -162,10 +194,12 @@ def format_reference_html(key: str, entry: dict) -> str:
     parts.append("</p>")
     return "".join(parts)
 
+
 def has_style_block(md_text: str) -> bool:
     return bool(HAS_STYLE_RE.search(md_text))
 
-def generate_reference_block(keys, bib_map, add_style=True) -> str:
+
+def generate_reference_block(keys, bib_map, add_style: bool = True) -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     lines = []
     if add_style:
@@ -190,6 +224,7 @@ def generate_reference_block(keys, bib_map, add_style=True) -> str:
     content = "\n".join(lines).rstrip() + "\n"
     return f"{BEGIN_MARK}\n{content}\n{END_MARK}\n"
 
+
 def insert_or_replace_reference_block(md_text: str, new_block: str) -> str:
     if BEGIN_MARK in md_text and END_MARK in md_text:
         pattern = re.compile(
@@ -204,7 +239,8 @@ def insert_or_replace_reference_block(md_text: str, new_block: str) -> str:
             md_text += "\n"
         return md_text + new_block
 
-def load_bib_map(bib_path: str) -> dict:
+
+def load_bib_map(bib_path: str) -> Dict[str, Dict[str, Any]]:
     if bib_path in _BIB_CACHE:
         return _BIB_CACHE[bib_path]
     with open(bib_path, "r", encoding="utf-8") as f:
@@ -213,31 +249,63 @@ def load_bib_map(bib_path: str) -> dict:
     _BIB_CACHE[bib_path] = bib_map
     return bib_map
 
-def extract_frontmatter(md_text: str):
+
+def extract_frontmatter(md_text: str) -> Tuple[Dict[str, Any], str]:
     """
-    Return (yaml_dict, rest_of_file).
+    Return (yaml_dict, body_text). If no frontmatter, ({}, md_text).
     """
     if not md_text.startswith("---"):
         return {}, md_text
     parts = md_text.split("---", 2)
     if len(parts) < 3:
         return {}, md_text
-    yaml_block, rest = parts[1], parts[2]
+    yaml_block, body = parts[1], parts[2]
     try:
-        data = yaml.safe_load(yaml_block)
+        data = yaml.safe_load(yaml_block) or {}
         if not isinstance(data, dict):
-            return {}, md_text
-        return data, "---".join(["", yaml_block, rest])
+            data = {}
+        return data, body
     except yaml.YAMLError:
         return {}, md_text
+
+
+def render_with_frontmatter(front: Dict[str, Any], body: str) -> str:
+    yml = yaml.safe_dump(front, sort_keys=False, allow_unicode=True).strip()
+    return f"---\n{yml}\n---{body if body.startswith('\n') else '\n' + body}"
+
+
+def compute_target_path(path: str, front_date) -> Optional[str]:
+    """
+    Compute new filename <YYYY-MM-DD>-<slug><ext> from frontmatter date.
+    slug = current filename without any leading date prefix.
+    Return full new path, or None if date can't be parsed or name already matches.
+    """
+    folder = os.path.dirname(path)
+    fname = os.path.basename(path)
+    root, ext = os.path.splitext(fname)
+
+    # Strip any leading date-like prefix to get slug
+    slug = re.sub(r"^\d{4}-\d{2}-\d{2}-", "", root)
+
+    prefix = _date_prefix_from_frontmatter(front_date)  # 'YYYY-MM-DD-' or ''
+    if not prefix:
+        return None  # can't rename without a valid date
+
+    new_name = f"{prefix}{slug}{ext}"
+    if fname == new_name:
+        return None
+    return os.path.join(folder, new_name)
+
 
 def process_file(path: str, inline_style: bool = True, dry_run: bool = False, base_folder: str = "."):
     with open(path, "r", encoding="utf-8") as f:
         original = f.read()
 
-    front, _ = extract_frontmatter(original)
+    front, body = extract_frontmatter(original)
+
     bibfile = front.get("bibfile")
     keys = front.get("citekeys", [])
+    front_date = front.get("date")
 
     if not bibfile or not keys:
         return False, "No bibfile or citekeys in frontmatter."
@@ -248,24 +316,46 @@ def process_file(path: str, inline_style: bool = True, dry_run: bool = False, ba
 
     bib_map = load_bib_map(bib_path)
 
-    add_style = inline_style
-    block = generate_reference_block(keys, bib_map, add_style=add_style)
-    updated = insert_or_replace_reference_block(original, block)
+    block = generate_reference_block(keys, bib_map, add_style=inline_style)
 
-    if updated == original:
-        return False, "No changes."
+    # Insert/replace references in BODY (not in frontmatter)
+    updated_body = insert_or_replace_reference_block(body, block)
+
+    # Recompose the full document
+    updated = render_with_frontmatter(front, updated_body)
+
+    # Determine target rename (based on header date)
+    target = compute_target_path(path, front_date)
 
     if dry_run:
-        return True, "Would update (dry run)."
+        rename_msg = f", would rename to {os.path.basename(target)}" if target else ""
+        if updated != original or target:
+            return True, f"Would update (dry run){rename_msg}."
+        else:
+            return False, "No changes."
 
-    backup = make_backup(path)
-    shutil.copyfile(path, backup)
+    # Make a backup once
+    backup = make_backup(path, front_date=front_date)
+
+    # Write updated content to current file
     with open(path, "w", encoding="utf-8") as f:
         f.write(updated)
+
+    # Rename if needed
+    if target:
+        if os.path.exists(target):
+            return True, f"Updated. Backup: {os.path.basename(backup)}. Rename skipped (target exists): {os.path.basename(target)}"
+        os.rename(path, target)
+        return True, f"Updated. Backup: {os.path.basename(backup)}. Renamed to: {os.path.basename(target)}"
+
     return True, f"Updated. Backup: {os.path.basename(backup)}"
 
+
 def main():
-    ap = argparse.ArgumentParser(description="Update Markdown references from YAML frontmatter (bibfile + citekeys).")
+    ap = argparse.ArgumentParser(
+        description="Update Markdown references from YAML frontmatter (bibfile + citekeys). "
+                    "Also rename file to <YYYY-MM-DD>-<slug>.<ext> based on frontmatter date."
+    )
     ap.add_argument("--folder", required=True, help="Folder containing Markdown files.")
     ap.add_argument("--style-inline", action="store_true",
                     help="Insert <style> block above Reference header if missing.")
@@ -296,12 +386,12 @@ def main():
     if not args.dry_run:
         print(f"\nDone. Files updated: {changed}/{len(md_paths)}")
 
+
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) == 1:  # no args passed
-        # Debug mode: run main() with test args
+    if len(sys.argv) == 1:  # no args passed -> debug defaults
         sys.argv.extend([
-            "--folder", "scripts/test_update_ref",   # adjust your folder
-            "--dry-run",           # don’t overwrite files
+            "--folder", "scripts/test_update_ref",  # adjust your folder
+            "--dry-run",
         ])
     main()
